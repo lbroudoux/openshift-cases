@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.github.lbroudoux.greeter</groupId>
+  <artifactId>greeter-client</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+  <name>JBoss EAP - Greeter Client App</name>
+
+  <properties>
+    <!-- Explicitly declaring the source encoding eliminates the following message: -->
+    <!-- [WARNING] Using platform encoding (UTF-8 actually) to copy filtered
+        resources, i.e. build is platform dependent! -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- JBoss dependency versions -->
+    <version.jboss.maven.plugin>7.4.Final</version.jboss.maven.plugin>
+
+    <!-- Define the version of the JBoss BOMs we want to import to specify tested stacks. -->
+    <version.jboss.bom.eap>6.4.0.GA</version.jboss.bom.eap>
+    <version.jboss.as>7.5.0.Final-redhat-21</version.jboss.as>
+
+    <!-- other plugin versions -->
+    <version.surefire.plugin>2.19.1</version.surefire.plugin>
+    <version.war.plugin>2.1.1</version.war.plugin>
+    <version.jar.plugin>3.0.2</version.jar.plugin>
+
+    <!-- maven-compiler-plugin -->
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+  </properties>
+
+  <distributionManagement>
+    <repository>
+       <id>nexus-fabric</id>
+       <url>http://nexus-fabric.52.174.61.6.nip.io/content/repositories/releases/</url>
+    </repository>
+     <snapshotRepository>
+        <id>nexus-fabric</id>
+        <url>http://nexus-fabric.52.174.61.6.nip.io/content/repositories/snapshots/</url>
+     </snapshotRepository>
+  </distributionManagement>
+
+  <dependencyManagement>
+    <dependencies>
+
+        <!-- JBoss distributes a complete set of Java EE 6 APIs including a Bill
+            of Materials (BOM). A BOM specifies the versions of a "stack" (or a collection)
+            of artifacts. We use this here so that we always get the correct versions
+            of artifacts. Here we use the jboss-javaee-6.0-with tools stack (you can read this as
+            the JBoss stack of the Java EE 6 APIs, with some extras tools for your project, such
+            as Arquillian for testing) -->
+      <dependency>
+        <groupId>org.jboss.bom.eap</groupId>
+        <artifactId>jboss-javaee-6.0-with-tools</artifactId>
+        <version>${version.jboss.bom.eap}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-ejb-client-bom</artifactId>
+        <version>${version.jboss.as}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Import the CDI API, we use provided scope as the API is included in JBoss EAP 6 -->
+    <dependency>
+        <groupId>javax.enterprise</groupId>
+        <artifactId>cdi-api</artifactId>
+        <scope>provided</scope>
+    </dependency>
+
+    <!-- Import the JAX-RS API, we use provided scope as the API is included in JBoss EAP 6 -->
+    <dependency>
+        <groupId>org.jboss.spec.javax.ws.rs</groupId>
+        <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-jackson-provider</artifactId>
+        <version>2.3.1.GA</version>
+        <scope>provided</scope>
+    </dependency>
+
+    <!-- Import the EJB API, we use provided scope as the API is included in JBoss EAP 6 -->
+    <dependency>
+        <groupId>org.jboss.spec.javax.ejb</groupId>
+        <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+        <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>com.github.lbroudoux.greeter</groupId>
+        <artifactId>greeter-server</artifactId>
+        <version>${project.version}</version>
+        <classifier>interface</classifier>
+    </dependency>
+
+    <!-- Test related dependencies -->
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-ejb-client</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+    <!-- Import the transaction spec API, we use runtime scope because we aren't using any direct
+     reference to the spec API in our client code -->
+   <dependency>
+      <groupId>org.jboss.spec.javax.transaction</groupId>
+      <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+      <scope>test</scope>
+   </dependency>
+
+    <!-- client communications with the server use XNIO -->
+    <dependency>
+        <groupId>org.jboss.xnio</groupId>
+        <artifactId>xnio-api</artifactId>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.jboss.xnio</groupId>
+        <artifactId>xnio-nio</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+    <!-- The client needs JBoss remoting to access the server -->
+    <dependency>
+        <groupId>org.jboss.remoting3</groupId>
+        <artifactId>jboss-remoting</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+    <!-- Remote EJB accesses can be secured -->
+    <dependency>
+        <groupId>org.jboss.sasl</groupId>
+        <artifactId>jboss-sasl</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+    <!-- data serialization for invoking remote EJBs -->
+    <dependency>
+        <groupId>org.jboss.marshalling</groupId>
+        <artifactId>jboss-marshalling-river</artifactId>
+        <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- Maven will append the version to the finalName (which is the name
+        given to the generated war, and hence the context root) -->
+    <finalName>greeter-client</finalName>
+    <plugins>
+      <plugin>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>${version.war.plugin}</version>
+          <configuration>
+              <!-- Java EE 6 doesn't require web.xml, Maven needs to catch up! -->
+              <failOnMissingWebXml>false</failOnMissingWebXml>
+          </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
