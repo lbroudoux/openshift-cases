@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: myapp-pipeline
+  labels:
+    name: myapp-pipeline
+  annotations:
+    pipeline.alpha.openshift.io/uses: '[{"name": "myapp", "namespace": "myapp-dev", "kind": "DeploymentConfig"}]'
+spec:
+  triggers:
+    -
+      type: GitHub
+      github:
+        secret: secret101
+    -
+      type: Generic
+      generic:
+        secret: secret101
+  runPolicy: Serial
+  source:
+    type: None
+  strategy:
+    type: JenkinsPipeline
+    jenkinsPipelineStrategy:
+      jenkinsfile: "node('maven') {\nstage 'buildInDev'\nopenshiftBuild(namespace: 'myapp-dev', buildConfig: 'myapp', showBuildLogs: 'true')\nstage 'deployInDev'\nopenshiftDeploy(namespace: 'myapp-dev', deploymentConfig: 'myapp')\nstage 'deployInTest'\nopenshiftTag(namespace: 'myapp-dev', sourceStream: 'myapp',  sourceTag: 'latest', destinationStream: 'myapp', destinationTag: 'promoteToTest')\nopenshiftDeploy(namespace: 'myapp-test', deploymentConfig: 'myapp')\nstage 'approval'\ninput 'Do you want to deploy this application in production?'\nstage 'deployInProd'\nopenshiftTag(namespace: 'myapp-dev', sourceStream: 'myapp',  sourceTag: 'latest', destinationStream: 'myapp', destinationTag: 'promoteToProd')\nopenshiftDeploy(namespace: 'myapp-prod', deploymentConfig: 'myapp')\nopenshiftScale(namespace: 'myapp-prod', deploymentConfig: 'myapp',replicaCount: '2')\n}"
+  output:
+  resources:
+  postCommit:
