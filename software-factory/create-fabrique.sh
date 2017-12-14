@@ -7,7 +7,7 @@
 # CONFIGURATION                                                                #
 ################################################################################
 
-DOMAIN="apps.bizotdc.tech"
+DOMAIN="52.174.149.59.nip.io "
 PRJ_CI=("fabric" "CI/CD Fabric" "CI/CD Components (Jenkins, Gogs, etc)")
 GOGS_ROUTE="gogs-${PRJ_CI[0]}.$DOMAIN"
 
@@ -64,6 +64,7 @@ function deploy_jenkins() {
   oc new-app jenkins-persistent -l app=jenkins -p MEMORY_LIMIT=1Gi -n ${PRJ_CI[0]}
   sleep 5
   oc set resources dc/jenkins --limits=cpu=1,memory=2Gi --requests=cpu=200m,memory=1Gi -n ${PRJ_CI[0]}
+  oc adm pod-network make-projects-global ${PRJ_CI[0]}
 }
 
 function echo_header() {
