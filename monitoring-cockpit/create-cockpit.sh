@@ -31,6 +31,7 @@ function deploy_prometheus() {
 # Deploy Grafana
 function deploy_grafana() {
   echo_header "Deploying Grafana dashboard builder..."
+  oc import-image -n openshift rhel7 --from registry.access.redhat.com/rhel7:latest --confirm
   oc process -f grafana-base.yaml --param=NAMESPACE=${PRJ_CP[0]} | oc create -f - -n ${PRJ_CP[0]}
 }
 
