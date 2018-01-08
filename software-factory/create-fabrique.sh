@@ -7,7 +7,7 @@
 # CONFIGURATION                                                                #
 ################################################################################
 
-DOMAIN="52.174.149.59.nip.io "
+DOMAIN=""
 PRJ_CI=("fabric" "CI/CD Fabric" "CI/CD Components (Jenkins, Gogs, etc)")
 GOGS_ROUTE="gogs-${PRJ_CI[0]}.$DOMAIN"
 
@@ -32,6 +32,12 @@ function deploy_gogs() {
   local _DB_USER=gogs
   local _DB_PASSWORD=gogs
   local _DB_NAME=gogs
+
+  # hack for getting default domain for routes.
+  if [ "x$DOMAIN" = "x" ]; then
+    DOMAIN=$(oc get route docker-registry -o template --template='{{.spec.host}}' -n default | sed "s/docker-registry-default.//g")
+    GOGS_ROUTE="gogs-${PRJ_CI[0]}.$DOMAIN"
+  fi
 
   oc process -f gogs-persistent-template.yaml --param=HOSTNAME=$GOGS_ROUTE --param=GOGS_VERSION=0.9.113 --param=DATABASE_USER=$_DB_USER --param=DATABASE_PASSWORD=$_DB_PASSWORD --param=DATABASE_NAME=$_DB_NAME --param=SKIP_TLS_VERIFY=true -n ${PRJ_CI[0]} | oc create -f - -n ${PRJ_CI[0]}
   sleep 10
