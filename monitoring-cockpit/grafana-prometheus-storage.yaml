@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: grafana-prometheus-storage
+message: See https://github.com/nmasse-itix/OpenShift-Docker-Images/tree/master/grafana for more details.
+metadata:
+  annotations:
+    description: |-
+      The Persistent Volumes for Prometheus.
+    openshift.io/display-name: Prometheus (storage)
+    tags: instant-app
+    template.openshift.io/documentation-url: https://github.com/nmasse-itix/OpenShift-Docker-Images/tree/master/grafana
+    template.openshift.io/long-description: Persistent Volumes for Prometheus
+    template.openshift.io/provider-display-name: Nicolas Massé
+    template.openshift.io/support-url: https://github.com/nmasse-itix/OpenShift-Docker-Images/issues
+  name: grafana-prometheus-storage
+objects:
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: prometheus
+    labels:
+      template: grafana-prometheus-storage
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${PVC_SIZE}
+    storageClassName: ${PVC_STORAGE_CLASS}
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: prometheus-alertbuffer
+    labels:
+      template: grafana-prometheus-storage
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${PVC_SIZE}
+    storageClassName: ${PVC_STORAGE_CLASS}
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: prometheus-alertmanager
+    labels:
+      template: grafana-prometheus-storage
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${PVC_SIZE}
+    storageClassName: ${PVC_STORAGE_CLASS}
+
+##
+## Template Parameters
+##
+parameters:
+
+- description: The namespace to instantiate this template under. Defaults to 'openshift-metrics'.
+  name: NAMESPACE
+  value: openshift-metrics
+
+- description: The Storage Class to use to request the Persistent Volumes.
+  name: PVC_STORAGE_CLASS
+  value: ""
+
+- description: The Storage Class to use to request the Persistent Volumes.
+  name: PVC_SIZE
+  value: "10Gi"

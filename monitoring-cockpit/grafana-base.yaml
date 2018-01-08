@@ -1,0 +1,309 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: grafana-base
+message: See https://github.com/nmasse-itix/OpenShift-Docker-Images/tree/master/grafana for more details.
+metadata:
+  annotations:
+    description: |-
+      A grafana distribution for OpenShift.
+    openshift.io/display-name: Grafana (Base)
+    tags: instant-app
+    template.openshift.io/documentation-url: https://github.com/nmasse-itix/OpenShift-Docker-Images/tree/master/grafana
+    template.openshift.io/long-description: A grafana distribution for OpenShift.
+    template.openshift.io/provider-display-name: Nicolas Massé
+    template.openshift.io/support-url: https://github.com/nmasse-itix/OpenShift-Docker-Images/issues
+  name: grafana-base
+objects:
+
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: oauth-proxy
+    namespace: "${NAMESPACE}"
+    labels:
+      template: grafana-base
+  stringData:
+    session_secret: "${SESSION_SECRET}="
+
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: grafana
+    namespace: ${NAMESPACE}
+    labels:
+      template: grafana-base
+    annotations:
+      serviceaccounts.openshift.io/oauth-redirectreference.proxy: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"grafana"}}'
+  secrets:
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: grafana-config
+    namespace: ${NAMESPACE}
+    labels:
+      template: grafana-base
+  data:
+    grafana.ini: |-
+      [paths]
+      datasources = /etc/grafana-datasources/
+
+      [server]
+      http_addr = 127.0.0.1
+
+      [auth]
+      disable_login_form = true
+      disable_signout_menu = true
+
+      [auth.basic]
+      enabled = false
+
+      [auth.proxy]
+      enabled = true
+      header_name = X-Forwarded-User
+
+      [users]
+      auto_assign_org = true
+      auto_assign_org_role = Admin
+
+      [analytics]
+      reporting_enabled = false
+
+      [log]
+      mode = console
+
+      [dashboards.json]
+      enabled = true
+      path = /var/lib/grafana-dashboards
+
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      build: grafana
+      template: grafana-base
+    namespace: ${NAMESPACE}
+    name: grafana
+
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: grafana
+    labels:
+      build: grafana
+      template: grafana-base
+    namespace: ${NAMESPACE}
+  spec:
+    successfulBuildsHistoryLimit: 1
+    failedBuildsHistoryLimit: 1
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: grafana:latest
+        namespace: ${NAMESPACE}
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        uri: ${GIT_REPO}
+      type: Git
+      contextDir: grafana
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: ${RHEL_IMAGE_STREAM_TAG}
+          namespace: ${RHEL_IMAGE_STREAM_NAMESPACE}
+      type: Docker
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: grafana
+      template: grafana-base
+    name: grafana
+    namespace: ${NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      app: grafana
+      deploymentconfig: grafana
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: grafana
+          deploymentconfig: grafana
+          template: grafana-base
+      spec:
+        containers:
+        - image: " "
+          imagePullPolicy: IfNotPresent
+          name: grafana
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /etc/grafana/
+            name: grafana-config
+          - mountPath: /etc/grafana-datasources
+            name: grafana-datasources
+          - mountPath: /var/lib/grafana/
+            name: grafana-storage
+          - mountPath: /var/lib/grafana-dashboards
+            name: grafana-dashboards
+        - image: ${PROXY_IMAGE}
+          imagePullPolicy: IfNotPresent
+          name: proxy
+          args:
+          - --provider=openshift
+          - --https-address=:8443
+          - --http-address=
+          - --upstream=http://localhost:3000
+          - --openshift-service-account=grafana
+          - '--openshift-sar={"resource": "namespaces", "verb": "get", "resourceName": "${NAMESPACE}",  "namespace": "${NAMESPACE}"}'
+          - --tls-cert=/etc/tls/private/tls.crt
+          - --tls-key=/etc/tls/private/tls.key
+          - --client-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
+          - --cookie-secret-file=/etc/proxy/secrets/session_secret
+          - --openshift-ca=/etc/pki/tls/cert.pem
+          - --openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          ports:
+          - containerPort: 8443
+            name: web
+            protocol: TCP
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/tls/private
+            name: tls
+          - mountPath: /etc/proxy/secrets
+            name: secrets
+        dnsPolicy: ClusterFirst
+        terminationGracePeriodSeconds: 30
+        restartPolicy: Always
+        serviceAccountName: grafana
+        volumes:
+        - name: secrets
+          secret:
+            secretName: oauth-proxy
+        - name: tls
+          secret:
+            secretName: grafana-tls
+        - name: grafana-storage
+          emptyDir: {}
+        - name: grafana-config
+          configMap:
+            name: grafana-config
+        - name: grafana-datasources
+          configMap:
+            name: grafana-datasources
+        - name: grafana-dashboards
+          configMap:
+            name: grafana-dashboards
+    test: false
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - grafana
+        from:
+          kind: ImageStreamTag
+          name: grafana:latest
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: grafana
+      template: grafana-base
+    name: grafana
+    namespace: ${NAMESPACE}
+    annotations:
+      service.alpha.openshift.io/serving-cert-secret-name: grafana-tls
+  spec:
+    ports:
+    - name: oauth-proxy
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      app: grafana
+      deploymentconfig: grafana
+    sessionAffinity: None
+    type: ClusterIP
+
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      app: grafana
+      template: grafana-base
+    name: grafana
+    namespace: ${NAMESPACE}
+  spec:
+    host: ${GRAFANA_ROUTE_HOSTNAME}
+    port:
+      targetPort: oauth-proxy
+    to:
+      kind: Service
+      name: grafana
+      weight: 100
+    wildcardPolicy: None
+    tls:
+      termination: reencrypt
+
+##
+## Template Parameters
+##
+parameters:
+- description: The GIT repository to use.
+  displayName: GIT Repo URL
+  name: GIT_REPO
+  value: https://github.com/nmasse-itix/OpenShift-Docker-Images.git
+
+- description: The OpenShift Namespace where the RHEL ImageStream resides.
+  displayName: RHEL ImageStream Namespace
+  name: RHEL_IMAGE_STREAM_NAMESPACE
+  value: openshift
+
+- description: Name of the ImageStreamTag to be used for the RHEL image.
+  displayName: RHEL ImageStreamTag
+  name: RHEL_IMAGE_STREAM_TAG
+  value: rhel7:latest
+
+- description: The Docker image to use for the OAuth Proxy.
+  displayName: OAuth Proxy image
+  name: PROXY_IMAGE
+  value: openshift3/oauth-proxy:v3.7
+
+- description: The desired hostname of the route to the Grafana service.
+  displayName: Hostname of the Grafana Service
+  name: GRAFANA_ROUTE_HOSTNAME
+
+- description: The session secret for the proxy
+  name: SESSION_SECRET
+  generate: expression
+  from: "[a-zA-Z0-9]{43}"
+
+- description: The namespace to instantiate this template under. Defaults to 'openshift-metrics'.
+  name: NAMESPACE
+  value: openshift-metrics
