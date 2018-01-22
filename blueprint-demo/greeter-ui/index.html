@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+  	<title>Greeter UI Demo</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/main.css">
+  </head>
+  <body>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-menu">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">
+            <h1 class="logo">
+              <img alt="Brand" src="images/hola.png" height="42" width="42"/>
+            </h1>
+          </a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav" style="padding-left: 50px">
+            <li><h3 style="width: 350px">Greeter UI Demo</h3></li>
+          </ul>
+          <div class="navbar-form navbar-right" role="search" style="padding-top: 5px">
+            <div class="form-group">
+              <input id="greeter_host" type="text" class="form-control" placeholder="GREETER_HOST">
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div class="container-fluid">
+      <div class="jumbotron">
+        <h2>Hello Greeter UI Store on OpenShift !</h2>
+    	  <p>This demo is to demonstrate Architecture Blueprint using OpenShift</p>
+    	</div>
+      <div class="row">
+        <div class="col-md-7">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h2 class="panel-title"><img src="images/input.png" height="28" width="28"> Input</h2>
+            </div>
+            <div class="row">
+              <div class="col-md-7">
+                <div class="panel-body">
+                  <div class="form-horizontal">
+                    <div class="form-group">
+                      <label for="quantity" class="col-lg-3 control-label">Your name</label>
+                      <div class="col-lg-6">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="World">
+                      </div>
+                    </div>
+                    <br/><br/>
+                    <div class="form-group">
+                      <div class="col-lg-10 col-lg-offset-4">
+                        <button type="reset" class="btn btn-default">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="checkoutButton">Greet</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <img id="productImg" class="img-rounded">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Events</h3>
+            </div>
+            <div class="panel-body">
+              <p class="text-right"><button id="clearEvents" type="button" class="btn btn-default">Clear</button></p>
+              <div id="eventMsgDiv">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js'></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+    require(['config/config'], function(config){
+        var GREETER_HOST = "greeter-api-blueprint-demo.192.168.99.100.nip.io";
+        var MAX_MSG_DISPLAY = 8;
+
+        GREETER_HOST = config.baseUrl;
+
+        var msgsocket = null;
+        var eventMsgArray = [];
+
+        $("#greeter_host").blur(function(){
+            var value = $("#greeter_host").val();
+            if (value === null || value === "") {
+                $("#greeter_host").val(GREETER_HOST);
+            } else {
+                GREETER_HOST = value;
+            }
+        });
+
+        $("#checkoutButton").click(function(){
+            var name = $("#name").val();
+            $.ajax({
+                type: "GET",
+                url: "http://"+SHOP_HOST+"/api/greeting/order",
+                dataType: 'json',
+                contentType: 'application/json'
+            })
+            .done(function() {
+            })
+            .fail(function(result) {
+            })
+            .always(function(result) {
+                console.log('In always: ' + JSON.stringify(result));
+                if (result != null) {
+                    if (result.status === 200) {
+                    pushEventMsg("Product is available, order is recorded.", 'info');
+                    } else if (result.status === 404) {
+                    pushEventMsg("Sorry but product is not available ...", 'error');
+                    }
+                }
+            });
+        });
+
+        $("#clearEvents").click(function(){
+            eventMsgArray = [];
+            $('#eventMsgDiv').html("");
+        });
+
+        $(document).ready(function() {
+            if (!("WebSocket" in window)){
+                    $('#chatLog, input, button, #examples').fadeOut("fast");
+                    $('<p>Oh no, you need a browser that supports WebSockets. How about <a href="http://www.google.com/chrome">Google Chrome</a>?</p>').appendTo('#container');
+                } else {
+                connectEvents();
+            }
+        });
+
+        function connectEvents() {
+        }
+
+        function pushEventMsg(msg, level) {
+            eventMsgArray.push(createEventMsg(msg, level));
+            if (eventMsgArray.length > MAX_MSG_DISPLAY){
+                eventMsgArray.shift();
+            }
+            var msgContent = "";
+            for (i = 0; i < eventMsgArray.length; i++) {
+                msgContent += eventMsgArray[i];
+            }
+            $('#eventMsgDiv').html(msgContent);
+        }
+
+        function createEventMsg(msg, level){
+            var msgContent = '<div class="alert alert-dismissible ';
+            if (level && level === 'info') {
+                msgContent += ' alert-info">';
+            } else if (level && level === 'error') {
+                msgContent += ' alert-danger">';
+            } else if (level && level === 'success') {
+                msgContent += ' alert-success">';
+            }
+            msgContent += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+            msgContent += msg;
+            msgContent += '</div>';
+            return msgContent;
+        }
+    });
+    </script>
+  </body>
+</html>
