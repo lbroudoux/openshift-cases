@@ -115,17 +115,22 @@
                 dataType: 'json',
                 contentType: 'application/json'
             })
-            .done(function() {
+            .done(function(result) {
+                console.log('done: ' + JSON.stringify(result));
+                pushEventMsg("Greeting: " + result.response, 'info');
             })
             .fail(function(result) {
+                console.log('fail: ' + JSON.stringify(result));
+                pushEventMsg("Sorry but greeting is not available ...", 'error');
             })
             .always(function(result) {
                 console.log('In always: ' + JSON.stringify(result));
                 if (result != null) {
+                    console.log(result.status);
                     if (result.status === 200) {
-                    pushEventMsg("Greeting: " + result.response, 'info');
+                        
                     } else if (result.status === 404) {
-                    pushEventMsg("Sorry but greeting is not available ...", 'error');
+                        
                     }
                 }
             });
