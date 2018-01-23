@@ -111,7 +111,7 @@
             var name = $("#name").val();
             $.ajax({
                 type: "GET",
-                url: "http://"+GREETER_HOST+"/api/greeting/"+name,
+                url: "http://"+GREETER_HOST+"/greeter/api/greeter/greet/"+name,
                 dataType: 'json',
                 contentType: 'application/json'
             })

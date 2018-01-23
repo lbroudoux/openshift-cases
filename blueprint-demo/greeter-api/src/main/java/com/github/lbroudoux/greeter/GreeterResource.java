@@ -12,13 +12,13 @@ import java.util.logging.Logger;
 /**
  * A JAX-RS resource for exposing REST endpoints for Greeter manipulation
  */
-@Path("api")
+@Path("greeter")
 public class GreeterResource {
 
     private static Logger log = Logger.getLogger(GreeterResource.class.getName());
 
     @GET
-  @Path("greeting/{name}")
+  @Path("greet/{name}")
   @Produces({"application/json"})
   public String greet(@Context SecurityContext context, @PathParam("name") String name) {
     log.log(Level.INFO, "Getting new greet request for " + name);
