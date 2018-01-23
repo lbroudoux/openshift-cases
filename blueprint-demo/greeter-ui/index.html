@@ -90,10 +90,10 @@
     <script src="js/bootstrap.min.js"></script>
     <script>
     require(['config/config'], function(config){
-        var GREETER_HOST = "greeter-api-blueprint-demo.192.168.99.100.nip.io";
+        var GREETER_HOST = "greeter-api-blueprint.192.168.99.100.nip.io";
         var MAX_MSG_DISPLAY = 8;
 
-        GREETER_HOST = config.baseUrl;
+        GREETER_HOST = config.baseURL;
 
         var msgsocket = null;
         var eventMsgArray = [];
@@ -111,7 +111,7 @@
             var name = $("#name").val();
             $.ajax({
                 type: "GET",
-                url: "http://"+SHOP_HOST+"/api/greeting/order",
+                url: "http://"+GREETER_HOST+"/api/greeting/"+name,
                 dataType: 'json',
                 contentType: 'application/json'
             })
@@ -123,9 +123,9 @@
                 console.log('In always: ' + JSON.stringify(result));
                 if (result != null) {
                     if (result.status === 200) {
-                    pushEventMsg("Product is available, order is recorded.", 'info');
+                    pushEventMsg("Greeting: " + result.response, 'info');
                     } else if (result.status === 404) {
-                    pushEventMsg("Sorry but product is not available ...", 'error');
+                    pushEventMsg("Sorry but greeting is not available ...", 'error');
                     }
                 }
             });
