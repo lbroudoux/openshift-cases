@@ -12,18 +12,18 @@ import java.util.logging.Logger;
 /**
  * A JAX-RS resource for exposing REST endpoints for Greeter manipulation
  */
-@Path("greeter")
+@Path("/")
 public class GreeterResource {
 
     private static Logger log = Logger.getLogger(GreeterResource.class.getName());
 
     @GET
-  @Path("greet/{name}")
-  @Produces({"application/json"})
-  public String greet(@Context SecurityContext context, @PathParam("name") String name) {
-    log.log(Level.INFO, "Getting new greet request for " + name);
-    String response = "Hello " + name + "!";
-    log.log(Level.INFO, "Found greeting result " + response);
-    return "{\"response\":\"" + response + "\"}";
-  }
+    @Path("greet/{name}")
+    @Produces({"application/json"})
+    public String greet(@Context SecurityContext context, @PathParam("name") String name) {
+        log.log(Level.INFO, "Getting new greet request for " + name);
+        String response = "Hello " + name + "!";
+        log.log(Level.INFO, "Found greeting result " + response);
+        return "{\"response\":\"" + response + "\"}";
+    }
 }
