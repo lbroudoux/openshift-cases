@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "eap-custom image run script called"
+
+# Call default run script
+/usr/local/s2i/run

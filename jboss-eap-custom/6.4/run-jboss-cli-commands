@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo "eap-custom image run script called"
+
+# Local vars setup with defaults
+S2I_SOURCE_DIR="/home/jboss/source"
+
+# Call jboss-cli-commands script if any within application sources
+if [ -f "${S2I_SOURCE_DIR}/configuration/jboss-cli-commands" ]; then
+  echo "Using custom jboss-cli-commands from ${S2I_SOURCE_DIR}/configuration/jboss-cli-commands"
+  #source ${S2I_SOURCE_DIR}/configuration/jboss-cli-commands
+  source /opt/eap/bin/jboss-cli.sh --connect --file=${S2I_SOURCE_DIR}/configuration/jboss-cli-commands
+  #/subsystem=messaging/hornetq-server=default:read-resource
+fi
