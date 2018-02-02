@@ -1,4 +1,4 @@
-FROM openshift/jboss-eap70-openshift:latest
+FROM openshift/jboss-eap70-openshift:1.6
 
 ENV APM_VERSION=0.14.4.Final
 ENV APM_AGENT=/libs/hawkular-apm-agent.jar
