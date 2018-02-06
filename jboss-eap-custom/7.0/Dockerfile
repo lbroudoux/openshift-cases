@@ -12,7 +12,6 @@ RUN chmod 444 /libs/hawkular-apm-agent.jar
 
 # Add S2I customization
 COPY ./.s2i/bin/ /opt/eap-custom/s2i
-COPY run-jboss-cli-commands /opt/eap-custom
 
 RUN chmod -R 777 /opt/eap-custom
 
