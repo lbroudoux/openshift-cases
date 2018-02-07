@@ -9,11 +9,11 @@ if [ -z "$WAR_FILE_URL" ]; then
 else
   echo "Found WAR_FILE_URL environment variable for downloading artifact!"
   if [ -z "$WAR_FILE_USER" ]; then
-    echo "Executing curl -u $WAR_FILE_USER:$WAR_FILE_PASSWORD -o $JBOSS_HOME/standalone/deployments/ROOT.war -O $WAR_FILE_URL"
-    curl -k -u $WAR_FILE_USER:$WAR_FILE_PASSWORD -o $JBOSS_HOME/standalone/deployments/ROOT.war -O $WAR_FILE_URL
-  else 
     echo "Executing curl -o $JBOSS_HOME/standalone/deployments/ROOT.war -O $WAR_FILE_URL"
     curl -k -o $JBOSS_HOME/standalone/deployments/ROOT.war -O $WAR_FILE_URL
+  else 
+    echo "Executing curl -u $WAR_FILE_USER:$WAR_FILE_PASSWORD -o $JBOSS_HOME/standalone/deployments/ROOT.war -O $WAR_FILE_URL"
+    curl -k -u $WAR_FILE_USER:$WAR_FILE_PASSWORD -o $JBOSS_HOME/standalone/deployments/ROOT.war -O $WAR_FILE_URL
   fi
 fi
 
