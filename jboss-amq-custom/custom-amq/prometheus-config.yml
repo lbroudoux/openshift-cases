@@ -1,0 +1,101 @@
+startDelaySecs: 5
+ssl: false
+blacklistObjectNames: ["java.lang:*"]
+rules:
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), service=Health><>CurrentStatus'
+    name: activemq_broker_status
+    help: Broker Status
+    type: UNTYPED
+    labels:
+      broker: $1
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), service=PersistenceAdapter, instanceName=KahaDBPersistenceAdapter[([^,]+)]><>Size'
+    name: activemq_broker_persistence_adapter
+    help: Broker Persistence Adapter size
+    type: GAUGE
+    labels:
+      broker: $1
+      persistentVolume: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Queue, destinationName=([^,]+)><>QueueSize'
+    name: activemq_queue_size
+    help: Number of messages on this destination
+    type: GAUGE
+    labels:
+      broker: $1
+      queue: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Queue, destinationName=([^,]+)><>MemoryPercentUsage'
+    name: activemq_queue_memory_percent
+    help: The percentage of the memory limit used
+    type: GAUGE
+    labels:
+      broker: $1
+      queue: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Queue, destinationName=([^,]+)><>ProducerCount'
+    name: activemq_queue_producer_count
+    help: Number of producers attached to this destination
+    type: GAUGE
+    labels:
+      broker: $1
+      queue: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Queue, destinationName=([^,]+)><>ConsumerCount'
+    name: activemq_queue_consumer_count
+    help: Number of consumers subscribed to this destination
+    type: GAUGE
+    labels:
+      broker: $1
+      queue: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Queue, destinationName=([^,]+)><>EnqueueCount'
+    name: activemq_queue_enqueue_count
+    help: Number of messages that have been sent to the destination
+    type: COUNTER
+    labels:
+      broker: $1
+      queue: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Queue, destinationName=([^,]+)><>DequeueCount'
+    name: activemq_queue_dequeue_count
+    help: Number of messages that has been acknowledged and removed from the destination
+    type: COUNTER
+    labels:
+      broker: $1
+      queue: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Topic, destinationName=([^,]+)><>QueueSize'
+    name: activemq_topic_size
+    help: Number of messages on this destination
+    type: GAUGE
+    labels:
+      broker: $1
+      topic: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Topic, destinationName=([^,]+)><>MemoryPercentUsage'
+    name: activemq_topic_memory_percent
+    help: The percentage of the memory limit used
+    type: GAUGE
+    labels:
+      broker: $1
+      topic: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Topic, destinationName=([^,]+)><>ProducerCount'
+    name: activemq_topic_producer_count
+    help: Number of producers attached to this destination
+    type: GAUGE
+    labels:
+      broker: $1
+      topic: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Topic, destinationName=([^,]+)><>ConsumerCount'
+    name: activemq_topic_consumer_count
+    help: Number of consumers subscribed to this destination
+    type: GAUGE
+    labels:
+      broker: $1
+      topic: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Topic, destinationName=([^,]+)><>EnqueueCount'
+    name: activemq_topic_enqueue_count
+    help: Number of messages that have been sent to the destination
+    type: COUNTER
+    labels:
+      broker: $1
+      topic: $2
+  - pattern: 'org.apache.activemq<type=Broker, brokerName=([^,]+), destinationType=Topic, destinationName=([^,]+)><>DequeueCount'
+    name: activemq_topic_dequeue_count
+    help: Number of messages that has been acknowledged and removed from the destination
+    type: COUNTER
+    labels:
+      broker: $1
+      topic: $2
