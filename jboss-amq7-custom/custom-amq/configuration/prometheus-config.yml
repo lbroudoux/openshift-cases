@@ -2,7 +2,7 @@ startDelaySecs: 5
 ssl: false
 blacklistObjectNames: ["java.lang:*"]
 rules:
-  - pattern: 'org.apache.activemq.artemis<broker=\"(.+?)\"><>ConnectionCount'
+  - pattern: 'org.apache.activemq.artemis<broker=([^,]+)><>ConnectionCount'
      name: artemis_connection_count
      help: Number of clients connected to this Broker
      type: GAUGE
