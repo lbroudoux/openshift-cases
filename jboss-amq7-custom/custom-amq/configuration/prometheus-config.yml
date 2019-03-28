@@ -1,0 +1,24 @@
+startDelaySecs: 5
+ssl: false
+blacklistObjectNames: ["java.lang:*"]
+rules:
+  - pattern: "org.apache.activemq.artemis<broker=\"(.+?)\"><>ConnectionCount"
+    attrNameSnakeCase: true
+    name: artemis_connection_count
+    type: GAUGE
+    labels:
+      broker: $1
+  - pattern: "org.apache.activemq.artemis<broker=\"(.+?)\", component=addresses, address=\"(.+?)\".*><>ConsumerCount"
+    attrNameSnakeCase: true
+    name: artemis_consumer_count
+    type: GAUGE
+    labels:
+      broker: $1
+      address: $2
+  - pattern: "org.apache.activemq.artemis<broker=\"(.+?)\", component=addresses, address=\"(.+?)\".*><>MessageCount"
+    attrNameSnakeCase: true
+    name: artemis_message_count
+    type: GAUGE
+    labels:
+      broker: $1
+      address: $2
