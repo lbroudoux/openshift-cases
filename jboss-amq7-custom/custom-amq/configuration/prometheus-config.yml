@@ -2,23 +2,44 @@ startDelaySecs: 5
 ssl: false
 blacklistObjectNames: ["java.lang:*"]
 rules:
-  - pattern: "org.apache.activemq.artemis<broker=\"(.+?)\"><>ConnectionCount"
+  - pattern: "^org.apache.activemq.artemis<broker=\"([^\"]*)\"><>([^:]*):\\s(.*)"
     attrNameSnakeCase: true
-    name: artemis_connection_count
-    type: GAUGE
+    name: artemis_$2
+    type: COUNTER
     labels:
       broker: $1
-  - pattern: "org.apache.activemq.artemis<broker=\"(.+?)\", component=addresses, address=\"(.+?)\".*><>ConsumerCount"
+  - pattern: "^org.apache.activemq.artemis<broker=\"([^\"]*)\",\\s*component=addresses,\\s*address=\"([^\"]*)\"><>([^:]*):\\s(.*)"
     attrNameSnakeCase: true
-    name: artemis_consumer_count
-    type: GAUGE
-    labels:
-      broker: $1
-      address: $2
-  - pattern: "org.apache.activemq.artemis<broker=\"(.+?)\", component=addresses, address=\"(.+?)\".*><>MessageCount"
-    attrNameSnakeCase: true
-    name: artemis_message_count
-    type: GAUGE
+    name: artemis_$3
+    type: COUNTER
     labels:
       broker: $1
       address: $2
+  - pattern: "^org.apache.activemq.artemis<broker=\"([^\"]*)\",\\s*component=addresses,\\s*address=\"([^\"]*)\",\\s*subcomponent=(queue|topic)s,\\s*routing-type=\"([^\"]*)\",\\s*(queue|topic)=\"([^\"]*)\"><>([^: ]*):\\s(.*)"
+    attrNameSnakeCase: true
+    name: artemis_$7
+    type: COUNTER
+    labels:
+      broker: $1
+      address: $2
+      "$5": $6
+  # - pattern: "org.apache.activemq.artemis<broker=\"(.+?)\"><>ConnectionCount"
+  #   attrNameSnakeCase: true
+  #   name: artemis_connection_count
+  #   type: GAUGE
+  #   labels:
+  #     broker: $1
+  # - pattern: "org.apache.activemq.artemis<broker=\"(.+?)\", component=addresses, address=\"(.+?)\".*><>ConsumerCount"
+  #   attrNameSnakeCase: true
+  #   name: artemis_consumer_count
+  #   type: GAUGE
+  #   labels:
+  #     broker: $1
+  #     address: $2
+  # - pattern: "org.apache.activemq.artemis<broker=\"(.+?)\", component=addresses, address=\"(.+?)\".*><>MessageCount"
+  #   attrNameSnakeCase: true
+  #   name: artemis_message_count
+  #   type: GAUGE
+  #   labels:
+  #     broker: $1
+  #     address: $2
