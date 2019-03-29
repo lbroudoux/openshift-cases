@@ -1,0 +1,41 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    app: custom-amq-broker-72-openshift
+  name: custom-amq-broker-72-openshift
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'custom-amq-broker-72-openshift:latest'
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    contextDir: jboss-amq7-custom/custom-amq
+    git:
+      uri: 'https://github.com/lbroudoux/openshift-cases'
+    type: Git
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: 'amq-broker-72-openshift:1.2'
+        namespace: openshift
+    type: Source
+  successfulBuildsHistoryLimit: 5
+  triggers:
+    - github:
+        secret: 2Wvsh8udScHNUXNGZHJa
+      type: GitHub
+    - generic:
+        secret: NH9WVCUS5tik6ZXjgSYp
+      type: Generic
+    - type: ConfigChange
+    - imageChange:
+        lastTriggeredImageID: >-
+          registry.access.redhat.com/amq-broker-7/amq-broker-72-openshift@sha256:810c5cb9315c31948c10886e4a65ec1d952b64b30ac0a1833bb7df9c29864ace
+      type: ImageChange
