@@ -1,4 +1,46 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "5.1.4"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": "5.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "5.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "singlestat",
+      "name": "Singlestat",
+      "version": "5.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": "5.0.0"
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -12,11 +54,12 @@
       }
     ]
   },
-  "description": "Dashboard for monitoring Apache Artemis",
+  "description": "Dashboard for monitoring Red Hat AMQ Broker",
   "editable": true,
+  "gnetId": 9087,
   "graphTooltip": 0,
-  "id": 1,
-  "iteration": 1553867064257,
+  "id": null,
+  "iteration": 1559057658028,
   "links": [],
   "panels": [
     {
@@ -28,7 +71,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -80,7 +123,7 @@
       "tableColumn": "runtime",
       "targets": [
         {
-          "expr": "jvm_info{instance=\"$instance\"}",
+          "expr": "jvm_info{kubernetes_namespace=\"$ocpproject\",application=\"$broker\",instance=\"$instance\"}",
           "format": "table",
           "instant": true,
           "intervalFactor": 1,
@@ -110,7 +153,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -192,7 +235,7 @@
         "#bf1b00",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -279,7 +322,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#299c46"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -361,7 +404,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -441,7 +484,7 @@
     },
     {
       "columns": [],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "fontSize": "100%",
       "gridPos": {
         "h": 9,
@@ -594,7 +637,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -681,7 +724,7 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -764,7 +807,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "gridPos": {
         "h": 10,
@@ -851,7 +894,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "gridPos": {
         "h": 10,
@@ -946,7 +989,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "gridPos": {
         "h": 8,
@@ -1033,7 +1076,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "description": "",
       "fill": 1,
       "gridPos": {
@@ -1078,7 +1121,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "JMV Memory Usage",
+      "title": "JVM Memory Usage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1120,7 +1163,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "description": "",
       "fill": 1,
       "gridPos": {
@@ -1165,7 +1208,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "JMV Memory Pool Usage",
+      "title": "JVM Memory Pool Usage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1207,7 +1250,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "description": "",
       "fill": 1,
       "gridPos": {
@@ -1252,7 +1295,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "JMV GC Counts",
+      "title": "JVM GC Counts",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1294,7 +1337,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "description": "",
       "fill": 1,
       "gridPos": {
@@ -1345,7 +1388,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "JMV Threads",
+      "title": "JVM Threads",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1383,7 +1426,7 @@
       }
     }
   ],
-  "schemaVersion": 18,
+  "schemaVersion": 16,
   "style": "dark",
   "tags": [
     "amq",
@@ -1393,20 +1436,60 @@
     "list": [
       {
         "allValue": null,
-        "current": {
-          "tags": [],
-          "text": "10.128.1.32:9779",
-          "value": "10.128.1.32:9779"
-        },
-        "datasource": "prometheus",
-        "definition": "",
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(jvm_info{kubernetes_name=\"broker-amq-prometheus\"}, kubernetes_namespace)",
         "hide": 0,
         "includeAll": false,
-        "label": "instance",
+        "label": "project",
+        "multi": false,
+        "name": "ocpproject",
+        "options": [],
+        "query": "label_values(jvm_info{kubernetes_name=\"broker-amq-prometheus\"}, kubernetes_namespace)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(jvm_info{kubernetes_name=\"broker-amq-prometheus\", kubernetes_namespace=\"$ocpproject\"}, application)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Broker",
+        "multi": false,
+        "name": "broker",
+        "options": [],
+        "query": "label_values(jvm_info{kubernetes_name=\"broker-amq-prometheus\", kubernetes_namespace=\"$ocpproject\"}, application)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
+        "definition": "label_values(jvm_info{kubernetes_name=\"broker-amq-prometheus\", kubernetes_namespace=\"$ocpproject\", application=\"$broker\"}, instance)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Instance",
         "multi": false,
         "name": "instance",
         "options": [],
-        "query": "label_values(jvm_info, instance)",
+        "query": "label_values(jvm_info{kubernetes_name=\"broker-amq-prometheus\", kubernetes_namespace=\"$ocpproject\", application=\"$broker\"}, instance)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1420,7 +1503,7 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {
@@ -1451,5 +1534,5 @@
   "timezone": "",
   "title": "Red Hat AMQ Broker",
   "uid": "sLliSaBiz",
-  "version": 4
+  "version": 10
 }
