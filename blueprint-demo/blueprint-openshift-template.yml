@@ -1,0 +1,392 @@
+---
+apiVersion: v1
+kind: Template
+labels:
+  template: coveuse-template
+message: "A new CoveUse (Apache httpd and Wildfly) application has been created into your project. Be sure to adapt the \"${APPLICATION_NAME}-frontend-config\" configuration map to adapt the settings of your client side."
+metadata:
+  annotations:
+    description: A template for CoveUse application
+    iconClass: icon-rh-openjdk
+    tags: java,wildlfy,covea
+    openshift.io/display-name: CoveUse 1.0 (httpd + Widlfly)
+    openshift.io/provider-display-name: Covea
+    version: 1.0.0
+  name: coveuse-template
+parameters:
+- name: APPLICATION_NAME
+  value: my-app
+  displayName: Application Name
+  description: Name of your application.
+  required: true
+- description: Git source URI for frontend
+  name: FRONTEND_SOURCE_REPOSITORY_URL
+  required: true
+  value: https://github.com/lbroudoux/openshift-cases
+- description: Git branch/tag reference for frontend
+  name: FRONTEND_SOURCE_REPOSITORY_REF
+  value: master
+- description: Path within Git project to build for frontend
+  name: FRONTEND_CONTEXT_DIR
+  value: /blueprint-demo/greeter-ui
+- description: Git source URI for backend
+  name: BACKEND_SOURCE_REPOSITORY_URL
+  required: true
+  value: https://github.com/lbroudoux/openshift-cases
+- description: Git branch/tag reference for backend
+  name: BACKEND_SOURCE_REPOSITORY_REF
+  value: master
+- description: Path within Git project to build for backend
+  name: BACKEND_CONTEXT_DIR
+  value: /blueprint-demo/greeter-api
+- name: NAMESPACE
+  displayName: Namespace for HTTPD and Wildfly images
+  description: The OpenShift Namespace where the HTTPD and Wildfly images reside.
+  value: openshift
+- description: GitHub trigger secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GITHUB_WEBHOOK_SECRET
+  required: true
+- description: Generic build trigger secret
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: GENERIC_WEBHOOK_SECRET
+  required: true
+objects:
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-frontend"
+    labels:
+      app: "${APPLICATION_NAME}"
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: ${APPLICATION_NAME}
+    name: "${APPLICATION_NAME}-frontend"
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "${APPLICATION_NAME}-frontend:latest"
+    source:
+      contextDir: ${FRONTEND_CONTEXT_DIR}
+      git:
+        ref: ${FRONTEND_SOURCE_REPOSITORY_REF}
+        uri: ${FRONTEND_SOURCE_REPOSITORY_URL}
+      type: Git
+    strategy:
+      sourceStrategy:
+        forcePull: true
+        from:
+          kind: ImageStreamTag
+          name: httpd:2.4
+          namespace: ${NAMESPACE}
+      type: Source
+    triggers:
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+    - generic:
+        secret: ${GENERIC_WEBHOOK_SECRET}
+      type: Generic
+    - imageChange: {}
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: "${APPLICATION_NAME}-frontend"
+    labels:
+      app: ${APPLICATION_NAME}
+      container: httpd
+  spec:
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - httpd
+        from:
+          kind: ImageStreamTag
+          name: "${APPLICATION_NAME}-frontend:latest"
+    replicas: 1
+    selector:
+      app: "${APPLICATION_NAME}"
+      deploymentconfig: "${APPLICATION_NAME}-frontend"
+      container: httpd
+    template:
+      metadata:
+        labels:
+          app: "${APPLICATION_NAME}"
+          deploymentconfig: "${APPLICATION_NAME}-frontend"
+          container: httpd
+      spec:
+        containers:
+          - name: httpd
+            image: "${APPLICATION_NAME}-frontend"
+            imagePullPolicy: IfNotPresent
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+            livenessProbe:
+              failureThreshold: 3
+              httpGet:
+                path: /
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 30
+              periodSeconds: 10
+              successThreshold: 1
+              timeoutSeconds: 3
+            readinessProbe:
+              failureThreshold: 3
+              httpGet:
+                path: /
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 3
+              periodSeconds: 10
+              successThreshold: 1
+              timeoutSeconds: 3
+            resources:
+              limits:
+                memory: 512Mi
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+            volumeMounts:
+              - mountPath: /opt/app-root/src/config
+                name: volume-config
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+          - configMap:
+              defaultMode: 420
+              name: "${APPLICATION_NAME}-frontend-config"
+            name: volume-config
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-frontend-config"
+    labels:
+      app: "${APPLICATION_NAME}"
+      container: httpd
+  data:
+    config.js: |-
+      define(function(require, exports, module) {
+        module.exports = {
+          // The base URL of the Backend API
+          baseURL: "greeter-app-backend-covea-demo.52.174.149.59.nip.io"
+        };
+      });
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-frontend"
+    labels:
+      app: "${APPLICATION_NAME}"
+      container: httpd
+  spec:
+    ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 0
+    selector:
+      deploymentconfig: "${APPLICATION_NAME}-frontend"
+      container: httpd
+    type: ClusterIP
+    sessionAffinity: None
+  status:
+    loadBalancer: {}
+- kind: Route
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}"
+    labels:
+      app: "${APPLICATION_NAME}"
+  spec:
+    to:
+      kind: Service
+      name: "${APPLICATION_NAME}-frontend"
+    port:
+      targetPort: http
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-backend"
+    labels:
+      app: "${APPLICATION_NAME}"
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: ${APPLICATION_NAME}
+    name: "${APPLICATION_NAME}-backend"
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "${APPLICATION_NAME}-backend:latest"
+    source:
+      contextDir: ${BACKEND_CONTEXT_DIR}
+      git:
+        ref: ${BACKEND_SOURCE_REPOSITORY_REF}
+        uri: ${BACKEND_SOURCE_REPOSITORY_URL}
+      type: Git
+    strategy:
+      sourceStrategy:
+        forcePull: true
+        from:
+          kind: ImageStreamTag
+          name: wildfly:10.1
+          namespace: ${NAMESPACE}
+      type: Source
+    triggers:
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+    - generic:
+        secret: ${GENERIC_WEBHOOK_SECRET}
+      type: Generic
+    - imageChange: {}
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: ${APPLICATION_NAME}
+    name: "${APPLICATION_NAME}-backend"
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: "${APPLICATION_NAME}-backend"
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - wildfly
+        from:
+          kind: ImageStream
+          name: "${APPLICATION_NAME}-backend"
+      type: ImageChange
+    - type: ConfigChange
+    template:
+      metadata:
+        labels:
+          app: ${APPLICATION_NAME}
+          deploymentconfig: "${APPLICATION_NAME}-backend"
+          container: wildfly
+        name: "${APPLICATION_NAME}-backend"
+      spec:
+        containers:
+        - name: wildfly
+          image: "${APPLICATION_NAME}-backend"
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8888
+            name: ping
+            protocol: TCP
+          env:
+          - name: OPENSHIFT_KUBE_PING_LABELS
+            value: application=${APPLICATION_NAME}
+          - name: OPENSHIFT_KUBE_PING_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: HORNETQ_CLUSTER_PASSWORD
+            value: hornetQPassword
+          - name: HORNETQ_QUEUES
+            value: ""
+          - name: HORNETQ_TOPICS
+            value: ""
+          - name: JGROUPS_CLUSTER_PASSWORD
+            value: jgroupsPassword
+        terminationGracePeriodSeconds: 60
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-backend"
+    labels:
+      app: "${APPLICATION_NAME}"
+      container: wildlfy
+  spec:
+    ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 0
+    selector:
+      deploymentconfig: "${APPLICATION_NAME}-backend"
+      container: wildfly
+    type: ClusterIP
+    sessionAffinity: None
+  status:
+    loadBalancer: {}
+- kind: Route
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-backend"
+    labels:
+      app: "${APPLICATION_NAME}"
+  spec:
+    to:
+      kind: Service
+      name: "${APPLICATION_NAME}-backend"
+    port:
+      targetPort: http
