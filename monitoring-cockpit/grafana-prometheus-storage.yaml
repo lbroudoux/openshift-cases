@@ -19,20 +19,6 @@ objects:
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
-    name: prometheus
-    labels:
-      template: grafana-prometheus-storage
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: ${PVC_SIZE}
-    storageClassName: ${PVC_STORAGE_CLASS}
-
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
     name: prometheus-alertbuffer
     labels:
       template: grafana-prometheus-storage

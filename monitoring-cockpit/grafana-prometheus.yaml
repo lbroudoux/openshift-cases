@@ -2439,7 +2439,7 @@ objects:
 
         - name: alertmanager
           args:
-          - -config.file=/etc/alertmanager/alertmanager.yml
+          - --config.file=/etc/alertmanager/alertmanager.yml
           image: "${ALERTMANAGER_IMAGE}"
           imagePullPolicy: IfNotPresent
           ports:
@@ -2464,8 +2464,8 @@ objects:
           secret:
             secretName: prometheus-tls
         - name: prometheus-data
-          persistentVolumeClaim:
-            claimName: prometheus
+          hostPath:
+            path: /exports/prometheus-data
         - name: alertmanager-config
           configMap:
             defaultMode: 420
@@ -2482,6 +2482,8 @@ objects:
         - name: alert-buffer-data
           persistentVolumeClaim:
             claimName: prometheus-alertbuffer
+        nodeSelector:
+          region: infra
 
 - kind: ConfigMap
   apiVersion: v1
@@ -2706,22 +2708,22 @@ parameters:
 - description: The Docker image to use for the OAuth Proxy.
   displayName: OAuth Proxy image
   name: PROXY_IMAGE
-  value: openshift3/oauth-proxy:v3.7
+  value: registry.access.redhat.com/openshift3/oauth-proxy:v3.9.30
 
 - description: The Docker image to use for Prometheus.
   displayName: Prometheus image
   name: PROMETHEUS_IMAGE
-  value: openshift3/prometheus:v3.7
+  value: registry.access.redhat.com/openshift3/prometheus:v3.9.30
 
 - description: The Docker image to use for the Alert Buffer.
   displayName: Alert Buffer image
   name: ALERTBUFFER_IMAGE
-  value: openshift3/prometheus-alert-buffer:v3.7
+  value: registry.access.redhat.com/openshift3/prometheus-alert-buffer:v3.9.30
 
 - description: The Docker image to use for the Alert Manager.
   displayName: Alert Manager image
   name: ALERTMANAGER_IMAGE
-  value: openshift3/prometheus-alertmanager:v3.7
+  value: registry.access.redhat.com/openshift3/prometheus-alertmanager:v3.9.30
 
 - description: The desired hostname of the route to the Prometheus service.
   displayName: Hostname of the Prometheus Service
