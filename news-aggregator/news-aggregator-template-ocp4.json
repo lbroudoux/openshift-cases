@@ -1,0 +1,729 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "news-aggregator",
+        "annotations": {
+          "description": "News Aggregator demonstration template"
+        }
+    },
+    "parameters": [
+      {
+        "name": "AGGREGATOR_SOURCE_URL",
+        "value": "https://github.com/lbroudoux/openshift-cases.git",
+        "description": "URL of Git repository for Aggregator component",
+        "required": true
+      },
+      {
+        "name": "AGGREGATOR_SOURCE_CTX",
+        "value": "news-aggregator/aggregator",
+        "description": "Path context for Aggregator component",
+        "required": true
+      },
+      {
+        "name": "AGGREGATOR_SOURCE_REF",
+        "value": "master",
+        "description": "Branch or Ref for Aggregator component",
+        "required": true
+      },
+      {
+        "name": "ARTICLES_SOURCE_URL",
+        "value": "https://github.com/lbroudoux/openshift-cases.git",
+        "description": "URL of Git repository for Articles component",
+        "required": true
+      },
+      {
+        "name": "ARTICLES_SOURCE_CTX",
+        "value": "news-aggregator/articles",
+        "description": "Path context for Articles component",
+        "required": true
+      },
+      {
+        "name": "ARTICLES_SOURCE_REF",
+        "value": "master",
+        "description": "Branch or Ref for Articles component",
+        "required": true
+      },
+      {
+        "name": "HELLO_SOURCE_URL",
+        "value": "https://github.com/lbroudoux/openshift-cases.git",
+        "description": "URL of Git repository for Hello component",
+        "required": true
+      },
+      {
+        "name": "HELLO_SOURCE_CTX",
+        "value": "news-aggregator/spring-boot-hello",
+        "description": "Path context for Hello component",
+        "required": true
+      },
+      {
+        "name": "HELLO_SOURCE_REF",
+        "value": "master",
+        "description": "Branch or Ref for Hello component",
+        "required": true
+      }
+    ],
+    "objects": [
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "aggregator",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "8080-tcp",
+                        "protocol": "TCP",
+                        "port": 8080,
+                        "targetPort": 8080
+                    }
+                ],
+                "selector": {
+                    "deploymentconfig": "aggregator"
+                },
+                "type": "ClusterIP",
+                "sessionAffinity": "None"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "articles",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "8080-tcp",
+                        "protocol": "TCP",
+                        "port": 8080,
+                        "targetPort": 8080
+                    }
+                ],
+                "selector": {
+                    "deploymentconfig": "articles"
+                },
+                "type": "ClusterIP",
+                "sessionAffinity": "None"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "hello",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "8080-tcp",
+                        "protocol": "TCP",
+                        "port": 8080,
+                        "targetPort": 8080
+                    },
+                    {
+                        "name": "8443-tcp",
+                        "protocol": "TCP",
+                        "port": 8443,
+                        "targetPort": 8443
+                    },
+                    {
+                        "name": "8778-tcp",
+                        "protocol": "TCP",
+                        "port": 8778,
+                        "targetPort": 8778
+                    }
+                ],
+                "selector": {
+                    "deploymentconfig": "hello"
+                },
+                "type": "ClusterIP",
+                "sessionAffinity": "None"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "aggregator",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "to": {
+                    "kind": "Service",
+                    "name": "aggregator",
+                    "weight": 100
+                },
+                "port": {
+                    "targetPort": "8080-tcp"
+                },
+                "wildcardPolicy": "None"
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "articles",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "articles"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "to": {
+                    "kind": "Service",
+                    "name": "articles",
+                    "weight": 100
+                },
+                "port": {
+                    "targetPort": "8080-tcp"
+                },
+                "wildcardPolicy": "None"
+            }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "hello",
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "to": {
+                    "kind": "Service",
+                    "name": "hello",
+                    "weight": 100
+                },
+                "port": {
+                    "targetPort": "8080-tcp"
+                },
+                "wildcardPolicy": "None"
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "aggregator",
+                "generation": 1,
+                "labels": {
+                    "app": "news-aggregator",
+                    "app.kubernetes.io/part-of": "news-aggregator"
+                },
+                "annotations": {
+                    "app.openshift.io/connects-to": "articles,hello"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "updatePeriodSeconds": 1,
+                        "intervalSeconds": 1,
+                        "timeoutSeconds": 600,
+                        "maxUnavailable": "25%",
+                        "maxSurge": "25%"
+                    },
+                    "resources": {},
+                    "activeDeadlineSeconds": 21600
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "aggregator"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "aggregator:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "test": false,
+                "selector": {
+                    "deploymentconfig": "aggregator"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app": "news-aggregator",
+                            "deploymentconfig": "aggregator"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "aggregator",
+                                "image": "aggregator",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 30,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "articles",
+                "generation": 1,
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "news-aggregator",
+                    "app.kubernetes.io/part-of": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "updatePeriodSeconds": 1,
+                        "intervalSeconds": 1,
+                        "timeoutSeconds": 600,
+                        "maxUnavailable": "25%",
+                        "maxSurge": "25%"
+                    },
+                    "resources": {},
+                    "activeDeadlineSeconds": 21600
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "articles"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "articles:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "test": false,
+                "selector": {
+                    "deploymentconfig": "articles"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app": "news-aggregator",
+                            "deploymentconfig": "articles"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "articles",
+                                "image": "articles",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 30,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "hello",
+                "generation": 1,
+                "labels": {
+                    "app": "news-aggregator",
+                    "app.kubernetes.io/part-of": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "updatePeriodSeconds": 1,
+                        "intervalSeconds": 1,
+                        "timeoutSeconds": 600,
+                        "maxUnavailable": "25%",
+                        "maxSurge": "25%"
+                    },
+                    "resources": {},
+                    "activeDeadlineSeconds": 21600
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "hello"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "hello:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "test": false,
+                "selector": {
+                    "deploymentconfig": "hello"
+                },
+                "template": {
+                    "metadata": {
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "hello",
+                            "deploymentconfig": "hello"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "hello",
+                                "image": "hello",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "containerPort": 8443,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "containerPort": 8778,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "terminationGracePeriodSeconds": 30,
+                        "dnsPolicy": "ClusterFirst",
+                        "securityContext": {}
+                    }
+                }
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "aggregator",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "triggers": [
+                    {
+                        "type": "Generic",
+                        "generic": {
+                            "secret": "fe1300bd14dd340f"
+                        }
+                    },
+                    {
+                        "type": "GitHub",
+                        "github": {
+                            "secret": "c4009e12fc06c587"
+                        }
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "runPolicy": "Serial",
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "${AGGREGATOR_SOURCE_URL}",
+                        "ref": "${AGGREGATOR_SOURCE_REF}"
+                    },
+                    "contextDir": "${AGGREGATOR_SOURCE_CTX}"
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "openshift",
+                            "name": "php:7.2"
+                        }
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "aggregator:latest"
+                    }
+                },
+                "resources": {},
+                "postCommit": {},
+                "nodeSelector": null
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "articles",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "triggers": [
+                    {
+                        "type": "Generic",
+                        "generic": {
+                            "secret": "2061579d89825e32"
+                        }
+                    },
+                    {
+                        "type": "GitHub",
+                        "github": {
+                            "secret": "c7dba037ea1619e1"
+                        }
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "runPolicy": "Serial",
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "${ARTICLES_SOURCE_URL}",
+                        "ref": "${ARTICLES_SOURCE_REF}"
+                    },
+                    "contextDir": "${ARTICLES_SOURCE_CTX}"
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "openshift",
+                            "name": "php:7.2"
+                        }
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "articles:latest"
+                    }
+                },
+                "resources": {},
+                "postCommit": {},
+                "nodeSelector": null
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "hello",
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "triggers": [
+                    {
+                        "type": "Generic",
+                        "generic": {
+                            "secret": "2e297a4f4432dc22"
+                        }
+                    },
+                    {
+                        "type": "GitHub",
+                        "github": {
+                            "secret": "d98f786ad3f2e0ba"
+                        }
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "runPolicy": "Serial",
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "${HELLO_SOURCE_URL}",
+                        "ref": "${HELLO_SOURCE_REF}"
+                    },
+                    "contextDir": "${HELLO_SOURCE_CTX}"
+                },
+                "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "openshift",
+                            "name": "redhat-openjdk18-openshift:1.0"
+                        }
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "hello:latest"
+                    }
+                },
+                "resources": {},
+                "postCommit": {},
+                "nodeSelector": null
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "aggregator",
+                "generation": 1,
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "tags": [{}]
+            },
+            "status": {
+                "dockerImageRepository": ""
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "articles",
+                "generation": 1,
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "tags": [{}]
+            },
+            "status": {
+                "dockerImageRepository": ""
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "hello",
+                "generation": 1,
+                "labels": {
+                    "app": "news-aggregator"
+                },
+                "annotations": {}
+            },
+            "spec": {
+                "tags": [{}]
+            },
+            "status": {
+                "dockerImageRepository": ""
+            }
+        }
+    ]
+}
