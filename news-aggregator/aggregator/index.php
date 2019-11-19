@@ -104,6 +104,7 @@
         $("#articles_url").val(ARTICLES_URL);
       } else {
         ARTICLES_URL = value;
+        retrieveArticle();
       }
     });
 
