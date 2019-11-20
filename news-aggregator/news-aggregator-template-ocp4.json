@@ -242,10 +242,16 @@
                 "generation": 1,
                 "labels": {
                     "app": "news-aggregator",
-                    "app.kubernetes.io/part-of": "news-aggregator"
+                    "app.kubernetes.io/part-of": "news-aggregator",
+                    "app.kubernetes.io/component": "aggregator",
+                    "app.kubernetes.io/instance": "aggregator",
+                    "app.openshift.io/runtime": "php",
+                    "app.openshift.io/runtime-version": "7.2"
                 },
                 "annotations": {
-                    "app.openshift.io/connects-to": "articles,hello"
+                    "app.openshift.io/connects-to": "articles,hello",
+                    "app.openshift.io/vcs-uri": "${AGGREGATOR_SOURCE_URL}",
+                    "app.openshift.io/vcs-ref": "${AGGREGATOR_SROUCE_REF}"
                 }
             },
             "spec": {
@@ -324,9 +330,16 @@
                 "creationTimestamp": null,
                 "labels": {
                     "app": "news-aggregator",
-                    "app.kubernetes.io/part-of": "news-aggregator"
+                    "app.kubernetes.io/part-of": "news-aggregator",
+                    "app.kubernetes.io/component": "articles",
+                    "app.kubernetes.io/instance": "articles",
+                    "app.openshift.io/runtime": "php",
+                    "app.openshift.io/runtime-version": "7.2"
                 },
-                "annotations": {}
+                "annotations": {
+                    "app.openshift.io/vcs-uri": "${ARTICLES_SOURCE_URL}",
+                    "app.openshift.io/vcs-ref": "${ARTICLES_SROUCE_REF}"
+                }
             },
             "spec": {
                 "strategy": {
@@ -403,9 +416,16 @@
                 "generation": 1,
                 "labels": {
                     "app": "news-aggregator",
-                    "app.kubernetes.io/part-of": "news-aggregator"
+                    "app.kubernetes.io/part-of": "news-aggregator",
+                    "app.openshift.io/runtime": "java",
+                    "app.kubernetes.io/component": "hello",
+                    "app.kubernetes.io/instance": "hello",
+                    "app.openshift.io/runtime-version": "8"
                 },
-                "annotations": {}
+                "annotations": {
+                    "app.openshift.io/vcs-uri": "${HELLO_SOURCE_URL}",
+                    "app.openshift.io/vcs-ref": "${HELLO_SROUCE_REF}"
+                }
             },
             "spec": {
                 "strategy": {
@@ -490,7 +510,9 @@
                 "name": "aggregator",
                 "creationTimestamp": null,
                 "labels": {
-                    "app": "news-aggregator"
+                    "app": "news-aggregator",
+                    "app.kubernetes.io/component": "aggregator",
+                    "app.kubernetes.io/instance": "aggregator"
                 },
                 "annotations": {}
             },
@@ -553,7 +575,9 @@
                 "name": "articles",
                 "creationTimestamp": null,
                 "labels": {
-                    "app": "news-aggregator"
+                    "app": "news-aggregator",
+                    "app.kubernetes.io/component": "articles",
+                    "app.kubernetes.io/instance": "articles"
                 },
                 "annotations": {}
             },
@@ -615,7 +639,9 @@
             "metadata": {
                 "name": "hello",
                 "labels": {
-                    "app": "news-aggregator"
+                    "app": "news-aggregator",
+                    "app.kubernetes.io/component": "hello",
+                    "app.kubernetes.io/instance": "hello"
                 },
                 "annotations": {}
             },
