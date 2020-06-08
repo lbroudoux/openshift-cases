@@ -27,7 +27,9 @@ oc create -f operator-serverless-cr.yaml -n knative-serving
 oc create -f operator-crw-cr.yaml -n workspaces
 
 # Installing Fuse Online
-source fuse-online-docker-secret.sh
+source registry-redhat-io-docker-secret.sh
 oc create -f operator-syndesis-subscription.yaml -n fuse-online
-oc secrets link syndesis-operator syndesis-service-account-pull-secret --for=pull -n fuse-online
+oc secrets link syndesis-operator registry-redhat-io-sa-pull-secret --for=pull -n fuse-online
+oc secrets link builder registry-redhat-io-sa-pull-secret --for=pull -n fuse-online
+oc secrets link default registry-redhat-io-sa-pull-secret --for=pull  -n fuse-online
 oc create -f operator-syndesis-cr.yaml -n fuse-online

@@ -22,7 +22,7 @@ spec:
   name: kiali-ossm
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: kiali-operator.v1.12.11
+  startingCSV: kiali-operator.v1.12.12
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -35,7 +35,7 @@ spec:
   name: elasticsearch-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: elasticsearch-operator.4.4.0-202005180840
+  startingCSV: elasticsearch-operator.4.4.0-202005270305
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -48,7 +48,7 @@ spec:
   name: servicemeshoperator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: servicemeshoperator.v1.1.2
+  startingCSV: servicemeshoperator.v1.1.2.2
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -61,7 +61,7 @@ spec:
   name: serverless-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: serverless-operator.v1.7.0
+  startingCSV: serverless-operator.v1.7.1
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
