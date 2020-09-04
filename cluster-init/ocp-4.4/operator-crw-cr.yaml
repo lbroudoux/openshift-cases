@@ -8,6 +8,7 @@ spec:
     cheImageTag: ''
     cheFlavor: codeready
     devfileRegistryImage: ''
+    externalPluginRegistry: true 
     pluginRegistryImage: 'quay.io/lbroudoux/che-plugin-registry:master'
     tlsSupport: true
     selfSignedCert: false
