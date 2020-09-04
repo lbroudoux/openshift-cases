@@ -8,6 +8,7 @@ spec:
     cheImageTag: ''
     cheFlavor: codeready
     devfileRegistryImage: ''
+    externalPluginRegistry: true # add it for CRW 2.3 on OCP 4.5 at least
     pluginRegistryImage: 'quay.io/lbroudoux/che-plugin-registry:master'
     tlsSupport: true
     selfSignedCert: false
