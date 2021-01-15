@@ -1,0 +1,120 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: myapp-pipeline
+  labels:
+    name: myapp-pipeline
+  annotations:
+    pipeline.alpha.openshift.io/uses: '[{"name": "myapp", "namespace": "myapp-dev", "kind": "DeploymentConfig"}]'
+spec:
+  triggers:
+    -
+      type: GitHub
+      github:
+        secret: secret101
+    -
+      type: Generic
+      generic:
+        secret: secret101
+  nodeSelector: {}
+  output: {}
+  resources: {}
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  postCommit: {}
+  source:
+    type: None
+  runPolicy: Serial
+  strategy:
+    type: JenkinsPipeline
+    jenkinsPipelineStrategy:
+      jenkinsfile: >-
+        pipeline {
+          agent {
+            node {
+              label 'maven'
+            }
+          }
+          options {
+            timeout(time: 20, unit: 'MINUTES')
+          }
+        
+          stages {
+            stage('Build') {
+              steps {
+                script {
+                  openshift.withCluster() {
+                    openshift.withProject('myapp-dev') {
+                      openshift.startBuild('myapp').logs('-f')
+                    }
+                  }
+                }
+              }
+            }
+            stage('Deploy in Dev') {
+              steps {
+                script {
+                  openshift.withCluster() {
+                    openshift.withProject('myapp-dev') {
+                      def dcs = openshift.selector( [ 'dc/myapp' ])
+                      // We want to make sure that each pod is 'Running' before moving forward
+                      dcs.withEach {
+                        it.related('pods').untilEach(1) {
+                          return (it.object().status.phase == "Running")
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            stage('Deploy in Test') {
+              steps {
+                script {
+                  openshift.withCluster() {
+                    openshift.withProject('myapp-dev') {
+                      openshift.tag("myapp-dev/myapp:latest", "myapp-dev/myapp:promoteToTest")
+                    }
+                    openshift.withProject('myapp-test') {
+                      def dcs = openshift.selector( [ 'dc/myapp' ])
+                      // We want to make sure that each pod is 'Running' before moving forward
+                      dcs.withEach {
+                        it.related('pods').untilEach(1) {
+                          return (it.object().status.phase == "Running")
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            stage('Approval') {
+              steps {
+                script {
+                  def result = input(id: 'DeployProd', message: 'Do you want to deploy this application in production?', parameters: [[$class: 'BooleanParameterDefinition', defaultValue: true, description: '', name: 'Please confirm you agree with this']])
+                  echo 'Deploy in Prod?: ' + result
+                }
+              }
+            }
+            stage('Deploy in Prod') {
+              steps {
+                script {
+                  openshift.withCluster() {
+                    openshift.withProject('myapp-dev') {
+                      openshift.tag("myapp-dev/myapp:latest", "myapp-dev/myapp:promoteToProd")
+                    }
+                    openshift.withProject('myapp-prod') {
+                      def dcs = openshift.selector( [ 'dc/myapp' ])
+                      // We want to make sure that each pod is 'Running' before moving forward
+                      dcs.withEach {
+                        it.related('pods').untilEach(1) {
+                          return (it.object().status.phase == "Running")
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
