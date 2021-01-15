@@ -35,11 +35,13 @@ function deploy_gogs() {
 
   # hack for getting default domain for routes.
   if [ "x$DOMAIN" = "x" ]; then
-    DOMAIN=$(oc get route docker-registry -o template --template='{{.spec.host}}' -n default | sed "s/docker-registry-default.//g")
+    #DOMAIN=$(oc get route docker-registry -o template --template='{{.spec.host}}' -n default | sed "s/docker-registry-default.//g")
+    DOMAIN=$(oc get route console -o template --template='{{.spec.host}}' -n openshift-console | sed "s/console-openshift-console.//g")
     GOGS_ROUTE="gogs-${PRJ_CI[0]}.$DOMAIN"
   fi
 
-  oc process -f gogs-persistent-template.yaml --param=HOSTNAME=$GOGS_ROUTE --param=GOGS_VERSION=0.9.113 --param=DATABASE_USER=$_DB_USER --param=DATABASE_PASSWORD=$_DB_PASSWORD --param=DATABASE_NAME=$_DB_NAME --param=SKIP_TLS_VERIFY=true -n ${PRJ_CI[0]} | oc create -f - -n ${PRJ_CI[0]}
+  #oc process -f gogs-persistent-template.yaml --param=HOSTNAME=$GOGS_ROUTE --param=GOGS_VERSION=0.9.113 --param=DATABASE_USER=$_DB_USER --param=DATABASE_PASSWORD=$_DB_PASSWORD --param=DATABASE_NAME=$_DB_NAME --param=SKIP_TLS_VERIFY=true -n ${PRJ_CI[0]} | oc create -f - -n ${PRJ_CI[0]}
+  oc process -f gogs-persistent-template-ocp4.yaml --param=HOSTNAME=$GOGS_ROUTE --param=GOGS_VERSION=0.9.113 --param=DATABASE_USER=$_DB_USER --param=DATABASE_PASSWORD=$_DB_PASSWORD --param=DATABASE_NAME=$_DB_NAME --param=SKIP_TLS_VERIFY=true -n ${PRJ_CI[0]} | oc create -f - -n ${PRJ_CI[0]}
   sleep 10
 
   # wait for Gogs to be ready
@@ -109,5 +111,5 @@ function wait_while_empty() {
 
 create_cicd_project
 deploy_gogs
-deploy_nexus
+#deploy_nexus
 deploy_jenkins

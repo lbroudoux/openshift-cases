@@ -116,7 +116,9 @@ done
 # CONFIGURATION                                                                #
 ################################################################################
 
-DOMAIN="apps.bizotdc.tech"
+#DOMAIN="apps.bizotdc.tech"
+#DOMAIN="apps.cluster-lemans-ff7f.lemans-ff7f.example.opentlc.com"
+DOMAIN=$(oc get route console -o template --template='{{.spec.host}}' -n openshift-console | sed "s/console-openshift-console.//g")
 PRJ_CI=("fabric" "CI/CD Fabric" "CI/CD Components (Jenkins, Gogs, etc)")
 GOGS_ROUTE="gogs-${PRJ_CI[0]}.$DOMAIN"
 
@@ -259,7 +261,8 @@ EOM
 
   # Create 3 projects
   oc new-project myapp-dev --display-name="MyApp BG Development"
-  oc new-app php:5.6~http://$GOGS_ROUTE/$GOGS_ADMIN_USER/bg-demo.git --name=myapp -n myapp-dev
+  #oc new-app php:5.6~http://$GOGS_ROUTE/$GOGS_ADMIN_USER/bg-demo.git --name=myapp -n myapp-dev
+  oc new-app php:7.3-ubi8~http://$GOGS_ROUTE/$GOGS_ADMIN_USER/bg-demo.git --name=myapp -n myapp-dev
   oc new-project myapp-test --display-name="MyApp BG Testing"
   oc new-project myapp-prod --display-name="MyApp BG Production"
 
@@ -273,23 +276,26 @@ EOM
   oc adm policy add-role-to-group system:image-puller system:serviceaccounts:myapp-prod -n myapp-dev
 
   # After having created development bc, dc, svc, routes
-  oc expose svc myapp -n myapp
+  oc expose svc myapp -n myapp-dev
 
-  oc create deploymentconfig myapp --image=docker-registry.default.svc:5000/myapp-dev/myapp:promoteToTest -n myapp-test
+  #oc create deploymentconfig myapp --image=docker-registry.default.svc:5000/myapp-dev/myapp:promoteToTest -n myapp-test
+  oc create deploymentconfig myapp --image=image-registry.openshift-image-registry.svc:5000/myapp-dev/myapp:promoteToTest -n myapp-test
   oc rollout cancel dc/myapp -n myapp-test
   oc get dc myapp -o json -n myapp-test | jq '.spec.triggers |= []' | oc replace -f -
   oc get dc myapp -o yaml -n myapp-test | sed 's/imagePullPolicy: IfNotPresent/imagePullPolicy: Always/g' | oc replace -f -
   oc expose dc myapp --port=8080 -n myapp-test
   oc expose svc myapp -n myapp-test
 
-  oc create deploymentconfig myapp --image=docker-registry.default.svc:5000/myapp-dev/myapp:promoteToProd -n myapp-prod
-  oc rollout cancel dc/myapp -n myapp-test
+  #oc create deploymentconfig myapp --image=docker-registry.default.svc:5000/myapp-dev/myapp:promoteToProd -n myapp-prod
+  oc create deploymentconfig myapp --image=image-registry.openshift-image-registry.svc:5000/myapp-dev/myapp:promoteToProd -n myapp-prod
+  oc rollout cancel dc/myapp -n myapp-prod
   oc get dc myapp -o json -n myapp-prod | jq '.spec.triggers |= []' | oc replace -f -
   oc get dc myapp -o yaml -n myapp-prod | sed 's/imagePullPolicy: IfNotPresent/imagePullPolicy: Always/g' | oc replace -f -
   oc expose dc myapp --port=8080 -n myapp-prod
   oc expose svc myapp -n myapp-prod
 
-  oc create -f ../bg-demo/pipeline/pipeline.yml -n ${PRJ_CI[0]}
+  #oc create -f ../bg-demo/pipeline/pipeline.yml -n ${PRJ_CI[0]} 
+  oc create -f ../bg-demo/pipeline/pipeline-ocp4.yml -n ${PRJ_CI[0]}
 }
 
 function provision_news_aggregator_demo() {
