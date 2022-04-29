@@ -9,7 +9,7 @@ spec:
   name: jaeger-product
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: jaeger-operator.v1.17.2
+  startingCSV: jaeger-operator.v1.17.3
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -22,7 +22,7 @@ spec:
   name: kiali-ossm
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: kiali-operator.v1.12.12
+  startingCSV: kiali-operator.v1.12.13
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -35,7 +35,7 @@ spec:
   name: elasticsearch-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: elasticsearch-operator.4.4.0-202005270305
+  startingCSV: elasticsearch-operator.4.4.0-202006080610
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -48,7 +48,7 @@ spec:
   name: servicemeshoperator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: servicemeshoperator.v1.1.2.2
+  startingCSV: servicemeshoperator.v1.1.3
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -74,7 +74,7 @@ spec:
   name: amq-streams
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: amqstreams.v1.4.1
+  startingCSV: amqstreams.v1.5.0
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription

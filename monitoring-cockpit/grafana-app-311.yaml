@@ -147,6 +147,8 @@ objects:
         type: file
         disableDeletion: false
         updateIntervalSeconds: 300
+        options:
+          path: '/usr/share/dashboards'
 
 - apiVersion: v1
   kind: ImageStream
